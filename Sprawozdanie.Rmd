@@ -1,0 +1,331 @@
+---
+title: "Sprawozdanie"
+author: "Bartłomiej Fatyga"
+date: "10 marca 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Wprowadzenie i hipotezy.
+
+Celem sprawozdania jest badanie mocy trzech testów normalności (Shapiro-Wilka, Kołmogorowa-Smirnowa, Jarque-Bera)
+w przypadku, gdy dane pochodzą z rozkładu t-Studenta w zależności od:
+
+* Długości próby,
+* Ilości stopni swobody w rozkładzie t
+* Poziomu istotności wybranego testu.
+
+Dla poszczególnych testów celem badania jest również sprawdzenie hipotez:
+
+* Shapiro-Wilka
+    + Test normalności Shapiro-Wilka ma największą moc spośród badanych testów.
+    + Wartości uzyskane w wyniku przeprowadzenia testu Shapiro-Wilka w dużym stopniu zależą od wielkości próby.
+* Kołmogorowa-Smirnowa
+    + Wartości uzyskane w wyniku przeprowadzenia testu Kołmogorowa-Smirnowa w dużym stopniu zależą od ilości stopni swobody w badanym rozkładzie.
+* Jarque-Bera
+    + Wartości uzyskane w wyniku przeprowadzenia testu Jarque-Bera w dużym stopniu zależą od przyjętego poziomu istotności.
+  
+### Test Shapiro-Wilka
+Bardzo popularny test służący do sprawdzania normalności rozkładu zmiennej losowej. Po raz pierwszy został opublikowany w 1965 roku przez **Samuela Shapiro** i **Martina Wilka**. Test opiera się na wykresie kwantylowym i jest znany ze względu na dużą moc (co zamierzam udowodnić). Hipotezy tego testu są następującej postaci: 
+
+*H0: Rozkład badanej cechy jest rozkładem normalnym.*
+
+*H1: Rozkład badanej cechy nie jest rozkładem normalnym.*
+
+Przykładowy wykres kwantylowy:
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(ggpubr)
+```
+```{r}
+ggqqplot(rt(1000, 5))
+```
+
+Ze względu na specyfikę testu zdecydowałem się na następujące wartości próby:
+```{r, echo=TRUE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(5, 50, by = 5)
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000) #Zdecydowałem się na własne wartości, by jak najbardziej ukazać zależność od długości próby
+```
+
+### Test Kołmogorowa-Smirnowa
+Test Kołmogorowa-Smirnowa służy do badania zgodności danych z rozkładem ciągłym (w naszym przypadku z rozkładem normalnym). Nazwa testu wzięła sią od nazwisk dwóch rosyjskich statystyków: **Andrey'a Kołmogorowa** oraz **Nikolai'a Smirnowa**. Metoda ta opiera się na badaniu odległości między hipotetyczną dystrybuantą, a rzeczywistą. Dużą zaletą testu jest możliwośc wykorzystania go dla bardzo nielicznych prób. Hipotezy są następującej postaci:
+
+*H0: cecha X ma dystrybuantę F*
+
+*H1: cecha X nie ma dystrybuanty F*
+
+![](KS_Example.png)
+
+Zdecydowałem się na następujące wartości próby:
+```{r, echo=TRUE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(2, 20, by = 2)#Należy zwrócić uwagę, ze liczba stopni swobody uległa redukcji
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)
+```
+
+### Test Jarque-Bera
+Ostatni z badanych przeze mnie testów. Został nazwany tak, by uczcić dwóch statystków: meksykanina **Carlosa Jarque** oraz amerykanian **Anil'a K.Bera**. Metoda ta opiera się na obserwacji, że rozkład normalny jest symetrczyny oraz jego kurtoza wynosi 3. Do jego obliczania stosuje się wartości trzeciego i czwartego momentu centralnego reszt modelu. Hipotezy dla tego testu prezentują się następująco:
+
+*H0: składnik resztowy posiada rozkład normalny*
+
+*H1: składnik resztowy nie posiada rozkładu normalnego*
+
+Wybrane przeze mnie wartości próby służace do badnia mocy tego testu:
+```{r, echo=TRUE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(5, 50, by = 5)
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)
+```
+
+#### Uwaga: Wybrane przeze mnie wartości próby dla poszczególnych testów zostały wyznaczone za pomocą bardzo czasochłonnej metody prób i błędów. Posłużyło to uzyskaniu czytelnych i zrozumiałych wyników. Dodatkowo należy wziąć pod uwagę, że ze względu na dużą ilość symulacji (N = 1000) program może działać wolno (szacowany czas wykonania kody dla każdego testu od 1 min 30 sek do 2 min 10 sek). W przykładzie prezentowanym na ćwiczeniach długość próby znacznie odbiegała od tej wybranej przeze mnie. Zdecydowałem się ją powiększyć, gdyż naszym zadaniem na ćwiczeniach było przeprowadzenie t.testu dla danych pochodzących z rozkładu normalnego, dlatego mogliśmy zdecydować się na tak małe wartości. Wynika to z tego wykresu: 
+```{r, echo=FALSE}
+x <- seq(-4, 4, length=100)
+hx <- dnorm(x)
+
+degf <- c(1, 3, 8, 30)
+colors <- c("red", "blue", "darkgreen", "gold", "black")
+labels <- c("df=1", "df=3", "df=8", "df=30", "normal")
+
+plot(x, hx, type="l", lty=2, xlab="x value",
+  ylab="Density", main="Comparison of t Distributions")
+
+for (i in 1:4){
+  lines(x, dt(x,degf[i]), lwd=2, col=colors[i])
+}
+
+legend("topright", inset=.05, title="Distributions",
+  labels, lwd=2, lty=c(1, 1, 1, 1, 2), col=colors)
+```
+
+## Uzyskane wyniki
+
+```{r, include=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tseries)
+```
+### Test Shapiro-Wilka
+```{r, include=FALSE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(5, 50, by = 5)
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)
+
+params <- expand.grid(dfs, alphas, sample_l)
+str(params)
+names(params) <- c("df", "alpha", "length")
+head(params)
+```
+```{r}
+glimpse(params)
+```
+Przeprowadzenie symulacji:
+```{r}
+set.seed(100)
+now <- Sys.time()
+powers <- sapply(1:nrow(params), function(p){
+  df <- params[p, 1]
+  alpha <- params[p, 2]
+  l <- params[p, 3]
+  p_sim <-sapply(rep(df, N), function(x){
+    my_sample <- rt(l, df)
+    shapiro.test(my_sample)$p.value
+  })
+  mean(p_sim < alpha)
+})
+Sys.time() - now
+```
+```{r, include=FALSE}
+power_df <- bind_cols(params, power = powers)
+```
+Uzyskane wyniki:
+```{r, echo=FALSE}
+power_df %>% ggplot(aes(x = length, 
+                        y = power, 
+                        col = factor(df))) +
+  geom_line() +
+  facet_wrap(~alpha, ncol = 2)
+```
+```{r, include=FALSE}
+power_wide <- 
+  power_df %>%
+  spread(key = df, value = power)
+```
+```{r, echo=FALSE}
+power_wide %>%
+  ggplot(aes(x = length, 
+             y = `25`,
+             col = factor(alpha))) +
+  geom_line()
+```
+
+### Test Kołmogorowa-Smirnowa
+```{r, include=FALSE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(2, 20, by = 2)
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)
+
+params <- expand.grid(dfs, alphas, sample_l)
+str(params)
+names(params) <- c("df", "alpha", "length")
+head(params)
+```
+```{r}
+glimpse(params)
+```
+Przeprowadzenie symulacji:
+```{r}
+set.seed(100)
+now <- Sys.time()
+powers <- sapply(1:nrow(params), function(p){
+  df <- params[p, 1]
+  alpha <- params[p, 2]
+  l <- params[p, 3]
+  p_sim <-sapply(rep(df, N), function(x){
+    my_sample <- rt(l, df)
+    ks.test(my_sample, "pnorm")$p.value
+  })
+  mean(p_sim < alpha)
+})
+Sys.time() - now
+```
+```{r, include=FALSE}
+power_df <- bind_cols(params, power = powers)
+```
+Uzyskane wyniki:
+```{r, echo=FALSE}
+power_df %>% ggplot(aes(x = length, 
+                        y = power, 
+                        col = factor(df))) +
+  geom_line() +
+  facet_wrap(~alpha, ncol = 2)
+```
+```{r, include=FALSE}
+power_wide <- 
+  power_df %>%
+  spread(key = df, value = power)
+```
+```{r, echo=FALSE}
+power_wide %>%
+  ggplot(aes(x = length, 
+             y = `10`,
+             col = factor(alpha))) +
+  geom_line()
+```
+
+### Test Jarque-Bera
+```{r, include=FALSE}
+#Ilość symulacji
+N <- 1000
+#Rozpatrywane stopnie swobody
+dfs <- seq(5, 50, by = 5)
+#Rozpatrywane poziomy istotności
+alphas <- c(.001, .01, .05, .1)
+#Długości próby
+sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)
+
+params <- expand.grid(dfs, alphas, sample_l)
+str(params)
+names(params) <- c("df", "alpha", "length")
+head(params)
+```
+```{r}
+glimpse(params)
+```
+Przeprowadzenie symulacji:
+```{r}
+set.seed(100)
+now <- Sys.time()
+powers <- sapply(1:nrow(params), function(p){
+  df <- params[p, 1]
+  alpha <- params[p, 2]
+  l <- params[p, 3]
+  p_sim <-sapply(rep(df, N), function(x){
+    my_sample <- rt(l, df)
+    jarque.bera.test(my_sample)$p.value
+  })
+  mean(p_sim < alpha)
+})
+Sys.time() - now
+```
+```{r, include=FALSE}
+power_df <- bind_cols(params, power = powers)
+```
+Uzyskane wyniki:
+```{r, echo=FALSE}
+power_df %>% ggplot(aes(x = length, 
+                        y = power, 
+                        col = factor(df))) +
+  geom_line() +
+  facet_wrap(~alpha, ncol = 2)
+```
+```{r, include=FALSE}
+power_wide <- 
+  power_df %>%
+  spread(key = df, value = power)
+```
+```{r, echo=FALSE}
+power_wide %>%
+  ggplot(aes(x = length, 
+             y = `25`,
+             col = factor(alpha))) +
+  geom_line()
+```
+
+## Wnioski
+
+Z przeprowadzonej analizy możemy wysnuć parę interesujących wniosków:
+
+* Przede wszystkim zgodnie z przypuszczeniami testem charakteryzującym się największą mocą jest test **Shapiro-Wilka**, jednak różnica między nim, a testem **Jarque-Bera** jest niewielka. Prawdopodobnie dzieje się tak ponieważ:
+    + Test Shapiro-Wilka charakteryzuje się dużą mocą, gdy rozkład jest wyraźnie skośny lub gdy jest
+**symetryczny**, ale spłaszczony. Liczebność prób przeze mnie przyjętych sprzyjają uzyskaniu **symetrycznego** rozkładu naszej próbki.
+    + Test Jarque-Bera opiera się na obserwacji, że rozkład normalny jest **symetryczny**, więc wniosek jest analoginczy jak dla testu Shapiro-Wilka.
+
+* Możemy również potwierdzić wniosek, że rozkład statystki Shapiro-Wilka **zależy od liczności próby**, jednak nie możemy pokusić sie o stwierdzenie, że liczność próby ma przytłaczającą przewagę nad stopniami swobody, czy przyjętym poziomem istotności. Co więcej z pomocą wykresów możemy stwierdzić **bliską liniowej** zależność między liczebnością próby, a uzyskaną mocą. 
+
+* Uważam, że możemy **odrzucić hipotezę**, iż wartości uzyskane w wyniku przeprowadzenia testu Kołmogorowa-Smirnowa w **dużym stopniu zależą** od ilości stopni swobody w badanym rozkładzie. Z przeprowadzonej analizy wyraźnie widać, że mimo **zwiększanej** ilości stopni swobody wykresy nie zmieniają drastycznie swojego kształtu. Co więcej charakterystyka testu Kołmogorowa-Smirnowa zdaje się potwierdzać ten wniosek. Na dowód załączam jeszcze jeden wykres mocy testu dla większej różnicy między stopniami swobody:
+![](Rplot.png)
+
+* Dość oczywistym wnioskiem jest natomiast stwierdzenie, że test Kołmogorowa-Smirnowa charakteryzuje się **mniejszą mocą**, niż pozostałe badane testy.
+
+* W przypadku testu Jarque-Bera możemy potwierdzić hipotezę, iż wartości uzyskane w wyniku przeprowadzenia testu Jarque-Bera w **dużym stopniu zależą** od przyjętego poziomu istotności. Skoki między kolejnymi poziomami istotności są widoczne, jednak nie jest to szczególna cecha tego testu i nie wyróżnia się nią znacznie spośród pozostałych.
+
+### Czynniki które mogły wpłynąć na uzyskane wyniki
+Badając moc testów należy zwrócić uwagę na wiele bardzo istotnych czynników. Każdy test posiada inną charakterystykę, którą należy wziąć pod uwagę badając go (np. test Shapiro-Wilka sprawdza się dla liczebności próby od 3 do 5000). Na uzyskane przez mnie wyniki przede wszystkim wpłynęły dobrane przeze mnie wartości próby. Przy źle dobranych wartościach wykresy dla poszczególnych testów "nachodziłyby" na siebie, z kolei jeśli wartości byłby zbyt "dopasowane" nie bylibyśmy w stanie zaobserwować zależności. Dodatkowo wszystkie wartości podjęte obserwacji są uzyskane w wyniku algorytmu komputerowego więc nie możemy powiedzieć, że są w pełni losowe. Duże znacznie dla badania miały również ograniczenia sprzętowe. Dokładniejsze wyniki uzyskalibyśmy zwiększając liczbę symulacji, czy zwiększając rozpiętość wartości próby, jednak w tym przypadku czas działania skryptu znacznie by się zwiększył.
+
+
+
+
+
+
+
+
+
