@@ -5,13 +5,13 @@ library(normtest)
 library(tsoutliers)
 library(tseries)
 
-#Ilość symulacji
+#Number of simulation
 N <- 1000
-#Rozpatrywane stopnie swobody
+#Considered degrees of freedom
 dfs <- seq(5, 50, by = 5)#seq(10, 100, by = 10)
-#Rozpatrywane poziomy istotności
+#Considered levels of significance
 alphas <- c(.001, .01, .05, .1)
-#Długości próby
+#Sample length
 sample_l <- c(10,20,30,50,100,200,300,400,500,1000,2000)#seq(20, 1000, by = 100)
 
 params <- expand.grid(dfs, alphas, sample_l)
